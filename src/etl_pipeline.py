@@ -4,13 +4,13 @@ import logging
 import configparser
 import os
 
-# Set up logging
+
 logging.basicConfig(filename=os.path.join(os.path.dirname(__file__), '..', 'logs', 'etl_log.log'),
-                    level=logging.INFO,  # Change this line
+                    level=logging.INFO,  
                     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
-# Read configuration from config.ini
+
 config = configparser.ConfigParser()
 config.read(os.path.join(os.path.dirname(__file__), '..', 'config', 'config.ini'))
 
@@ -19,14 +19,14 @@ class ETLPipeline:
         self.csv_file = csv_file
 
     def _transform_data(self, row):
-        # Combine first name and last name into a single 'full_name' field
+        
         full_name = f"{row['first_name']} {row['last_name']}"
         row['full_name'] = full_name
         return row
 
     def run(self):
         try:
-            # Establish database connection
+          
             conn = psycopg2.connect(
                 host=config['postgresql']['host'],
                 database=config['postgresql']['database'],
@@ -35,7 +35,7 @@ class ETLPipeline:
             )
             cursor = conn.cursor()
 
-            # Create table if it doesn't exist
+           
             create_table_query = '''
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
@@ -49,7 +49,7 @@ class ETLPipeline:
             cursor.execute(create_table_query)
             conn.commit()
 
-            # Read CSV file and insert data into the database
+          
             with open(os.path.join(os.path.dirname(__file__), '..', 'data', self.csv_file), 'r') as csv_file:
                 csv_reader = csv.DictReader(csv_file)
                 for row in csv_reader:
