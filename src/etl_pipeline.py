@@ -20,6 +20,10 @@ class ETLPipeline:
         self.csv_file = csv_file
 
     def _transform_data(self, row):
+        # Combine first name and last name into a single 'full_name' field
+        full_name = f"{row['Firstname']} {row['Lastname']}"
+        row['full_name'] = full_name
+
         # Convert dates to proper format
         row['Join Date'] = datetime.strptime(row['Join Date'], '%Y-%m-%d').date()
         row['Date of Birth'] = datetime.strptime(row['Date of Birth'], '%Y-%m-%d').date()
@@ -41,8 +45,7 @@ class ETLPipeline:
             create_table_query = '''
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
-                first_name VARCHAR,
-                last_name VARCHAR,
+                full_name VARCHAR,
                 employee_id VARCHAR,
                 manager_name VARCHAR,
                 join_date DATE,
@@ -61,8 +64,8 @@ class ETLPipeline:
                 for row in csv_reader:
                     transformed_row = self._transform_data(row)
                     insert_query = '''
-                    INSERT INTO employees (first_name, last_name, employee_id, manager_name, join_date, date_of_birth, employee_age, employee_salary, employee_department)
-                    VALUES (%(Firstname)s, %(Lastname)s, %(Employee ID)s, %(Employee Manager Name)s, %(Join Date)s, %(Date of Birth)s, %(Employee Age)s, %(Employee Salary)s, %(Employee Department Name)s);
+                    INSERT INTO employees (full_name, employee_id, manager_name, join_date, date_of_birth, employee_age, employee_salary, employee_department)
+                    VALUES (%(full_name)s, %(Employee ID)s, %(Employee Manager Name)s, %(Join Date)s, %(Date of Birth)s, %(Employee Age)s, %(Employee Salary)s, %(Employee Department Name)s);
                     '''
                     cursor.execute(insert_query, transformed_row)
                     conn.commit()
